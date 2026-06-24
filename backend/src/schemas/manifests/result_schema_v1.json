@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ResultSchemaManifest",
+  "type": "object",
+  "properties": {
+    "kind": { "type": "string", "const": "result_schema" },
+    "id": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+    "name": { "type": "string" },
+    "schema_version": { "type": "string" },
+    "manifest_version": { "type": "string" },
+    "deprecated": { "type": "boolean", "default": false },
+    "deprecated_at": { "type": "string", "format": "date-time" },
+    "replaced_by": { "type": "string" },
+    "extraction_rules": {
+      "type": "object",
+      "properties": {
+        "sample_path": { "type": "string" },
+        "sample_id": { "type": "string" },
+        "input_text": { "type": "string" },
+        "expected_output": { "type": "string" },
+        "output_text": { "type": "string" },
+        "error_message": { "type": "string" },
+        "latency_ms": { "type": "string" },
+        "metrics": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        }
+      },
+      "required": ["sample_path", "sample_id", "output_text"]
+    }
+  },
+  "required": ["kind", "id", "name", "schema_version", "manifest_version", "extraction_rules"]
+}

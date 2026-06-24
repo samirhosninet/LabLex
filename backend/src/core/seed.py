@@ -47,6 +47,101 @@ def seed_db():
             db.commit()
             print("Seeded membership: admin@lablex.ai -> admin in default tenant")
             
+        # 5. Seed Mock Manifests for Registry
+        from src.models.evaluation import Manifest
+        
+        mock_manifests = [
+            {
+                "kind": "adapter",
+                "id": "mock_adapter_v1",
+                "name": "Mock Evaluation Adapter",
+                "schema_version": "1.0",
+                "manifest_version": "1.0.0",
+                "type": "mock",
+                "class_path": "src.adapters.mock_adapter.MockAdapter",
+                "compatible_result_schemas": ["mock_result_schema_v1"]
+            },
+            {
+                "kind": "result_schema",
+                "id": "mock_result_schema_v1",
+                "name": "Mock Result Schema",
+                "schema_version": "1.0",
+                "manifest_version": "1.0.0",
+                "extraction_rules": {
+                    "sample_path": "$.results",
+                    "sample_id": "$.id",
+                    "input_text": "$.input",
+                    "expected_output": "$.expected",
+                    "output_text": "$.actual",
+                    "error_message": "$.error",
+                    "latency_ms": "$.latency_ms",
+                    "metrics": {
+                        "score": "$.metrics.score",
+                        "accuracy": "$.metrics.accuracy"
+                    }
+                }
+            },
+            {
+                "kind": "external_tool",
+                "id": "mock_tool_v1",
+                "name": "Mock External Evaluation Tool",
+                "schema_version": "1.0",
+                "manifest_version": "1.0.0",
+                "endpoint": "http://localhost:8080/eval",
+                "compatible_adapters": ["mock_adapter_v1"],
+                "supported_benchmarks": ["mock_benchmark_v1"]
+            },
+            {
+                "kind": "benchmark",
+                "id": "mock_benchmark_v1",
+                "name": "Mock Evaluation Benchmark",
+                "schema_version": "1.0",
+                "manifest_version": "1.0.0",
+                "dataset_uri": "s3://lablex-benchmarks/mock.json",
+                "required_metrics": ["score", "accuracy"],
+                "size": 5
+            },
+            {
+                "kind": "target",
+                "id": "mock_target_v1",
+                "name": "Mock Deployment Target",
+                "schema_version": "1.0",
+                "manifest_version": "1.0.0",
+                "provider_id": "openai",
+                "endpoint": "https://api.openai.com/v1"
+            },
+            {
+                "kind": "model",
+                "id": "mock_model_v1",
+                "name": "Mock GPT-4 Model",
+                "schema_version": "1.0",
+                "manifest_version": "1.0.0",
+                "provider_id": "openai",
+                "compatible_targets": ["mock_target_v1"]
+            }
+        ]
+
+        for m_data in mock_manifests:
+            existing_m = db.query(Manifest).filter(
+                Manifest.tenant_id == tenant.id,
+                Manifest.kind == m_data["kind"],
+                Manifest.manifest_id == m_data["id"]
+            ).first()
+            if not existing_m:
+                db_m = Manifest(
+                    tenant_id=tenant.id,
+                    kind=m_data["kind"],
+                    manifest_id=m_data["id"],
+                    name=m_data["name"],
+                    schema_version=m_data["schema_version"],
+                    manifest_version=m_data["manifest_version"],
+                    content=m_data,
+                    deprecated=False
+                )
+                db.add(db_m)
+                print(f"Seeded registry manifest: {m_data['kind']} -> {m_data['id']}")
+        db.commit()
+            
     except Exception as e:
         print(f"Error seeding database: {e}")
         db.rollback()

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AdapterManifest",
+  "type": "object",
+  "properties": {
+    "kind": { "type": "string", "const": "adapter" },
+    "id": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+    "name": { "type": "string" },
+    "schema_version": { "type": "string" },
+    "manifest_version": { "type": "string" },
+    "deprecated": { "type": "boolean", "default": false },
+    "deprecated_at": { "type": "string", "format": "date-time" },
+    "replaced_by": { "type": "string" },
+    "type": { "type": "string", "enum": ["mock", "http", "docker"] },
+    "class_path": { "type": "string" },
+    "compatible_result_schemas": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "required": ["kind", "id", "name", "schema_version", "manifest_version", "type", "class_path", "compatible_result_schemas"]
+}

@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ReportTemplateManifest",
+  "type": "object",
+  "properties": {
+    "kind": { "type": "string", "const": "report_template" },
+    "id": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+    "name": { "type": "string" },
+    "schema_version": { "type": "string" },
+    "manifest_version": { "type": "string" },
+    "deprecated": { "type": "boolean", "default": false },
+    "deprecated_at": { "type": "string", "format": "date-time" },
+    "replaced_by": { "type": "string" },
+    "format": { "type": "string", "enum": ["html", "pdf", "markdown"] },
+    "layout": { "type": "string", "enum": ["single_run", "comparison", "batch_summary"] },
+    "sections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "type": { "type": "string" },
+          "required": { "type": "boolean" },
+          "columns": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        },
+        "required": ["id", "title", "type", "required"]
+      }
+    }
+  },
+  "required": ["kind", "id", "name", "schema_version", "manifest_version", "format", "layout", "sections"]
+}

@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ExternalToolManifest",
+  "type": "object",
+  "properties": {
+    "kind": { "type": "string", "const": "external_tool" },
+    "id": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+    "name": { "type": "string" },
+    "schema_version": { "type": "string" },
+    "manifest_version": { "type": "string" },
+    "deprecated": { "type": "boolean", "default": false },
+    "deprecated_at": { "type": "string", "format": "date-time" },
+    "replaced_by": { "type": "string" },
+    "endpoint": { "type": "string", "format": "uri" },
+    "connection_id": { "type": "string" },
+    "compatible_adapters": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "supported_benchmarks": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "required": ["kind", "id", "name", "schema_version", "manifest_version", "endpoint", "compatible_adapters"]
+}
