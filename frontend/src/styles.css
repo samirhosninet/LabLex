@@ -1,0 +1,283 @@
+/* Custom Premium Design System for LabLex */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --bg-primary: #0b0c10;
+  --bg-secondary: #1f2833;
+  --text-primary: #c5c6c7;
+  --text-secondary: #66fcf1;
+  --accent-color: #45f3ff;
+  --danger-color: #ff3b30;
+  --success-color: #34c759;
+  --card-bg: rgba(31, 40, 51, 0.45);
+  --border-color: rgba(69, 243, 255, 0.15);
+  --font-family: 'Inter', sans-serif;
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-image: radial-gradient(circle at 10% 20%, rgba(69, 243, 255, 0.05) 0%, transparent 40%),
+                    radial-gradient(circle at 90% 80%, rgba(31, 40, 51, 0.4) 0%, transparent 50%);
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Authentication Layout */
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.auth-card {
+  background: var(--card-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 420px;
+  padding: 40px;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.auth-card:hover {
+  border-color: rgba(69, 243, 255, 0.3);
+  box-shadow: 0 8px 32px 0 rgba(69, 243, 255, 0.1);
+}
+
+.logo {
+  font-size: 28px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+  background: linear-gradient(45deg, #fff, var(--accent-color));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+  color: #888;
+  font-size: 14px;
+  margin-bottom: 30px;
+}
+
+.form-group {
+  text-align: left;
+  margin-bottom: 20px;
+}
+
+.form-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #888;
+  margin-bottom: 8px;
+  letter-spacing: 1px;
+}
+
+.form-input {
+  width: 100%;
+  background: rgba(11, 12, 16, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #fff;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-family: var(--font-family);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 8px rgba(69, 243, 255, 0.25);
+}
+
+.btn-primary {
+  width: 100%;
+  background: linear-gradient(90deg, #1f2833, var(--text-secondary));
+  border: none;
+  border-radius: 8px;
+  color: #0b0c10;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 14px;
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  margin-top: 10px;
+  letter-spacing: 0.5px;
+}
+
+.btn-primary:hover {
+  opacity: 0.95;
+  transform: translateY(-1px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.error-message {
+  color: var(--danger-color);
+  font-size: 13px;
+  margin-top: 15px;
+  background: rgba(255, 59, 48, 0.1);
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 59, 48, 0.2);
+}
+
+/* Dashboard Layout */
+.dashboard-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 260px;
+  background: rgba(31, 40, 51, 0.25);
+  border-right: 1px solid var(--border-color);
+  padding: 30px 20px;
+  display: flex;
+  flex-direction: column;
+  backdrop-filter: blur(10px);
+}
+
+.sidebar-logo {
+  font-size: 22px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 1px;
+  margin-bottom: 40px;
+  text-align: center;
+}
+
+.nav-menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex-grow: 1;
+}
+
+.nav-item {
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.3s ease, color 0.3s ease;
+  color: #888;
+}
+
+.nav-item.active, .nav-item:hover {
+  background: rgba(69, 243, 255, 0.1);
+  color: #fff;
+}
+
+.user-profile {
+  margin-top: auto;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.user-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: #fff;
+}
+
+.user-role {
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 12px;
+}
+
+.btn-logout {
+  width: 100%;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+  padding: 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-logout:hover {
+  border-color: var(--danger-color);
+  color: var(--danger-color);
+  background: rgba(255, 59, 48, 0.05);
+}
+
+.main-content {
+  flex-grow: 1;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+}
+
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.page-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+
+.tenant-badge {
+  background: rgba(69, 243, 255, 0.1);
+  border: 1px solid var(--accent-color);
+  color: var(--accent-color);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.dashboard-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 30px;
+  text-align: center;
+  max-width: 600px;
+  margin: 40px auto;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.card-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #fff;
+  margin-top: 0;
+  margin-bottom: 15px;
+}
+
+.card-description {
+  color: #888;
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 25px;
+}

@@ -1,0 +1,32 @@
+{
+  "run_id": "25f0201c",
+  "workflow_id": "speckit",
+  "status": "failed",
+  "current_step_index": 0,
+  "current_step_id": "specify",
+  "step_results": {
+    "specify": {
+      "type": "command",
+      "integration": "gemini",
+      "model": null,
+      "options": {},
+      "input": {
+        "args": "LabLex AI Evaluation Control Plane MVP-0 Foundation"
+      },
+      "output": {
+        "command": "speckit.specify",
+        "integration": "gemini",
+        "model": null,
+        "options": {},
+        "input": {
+          "args": "LabLex AI Evaluation Control Plane MVP-0 Foundation"
+        },
+        "exit_code": 1,
+        "dispatched": false
+      },
+      "status": "failed"
+    }
+  },
+  "created_at": "2026-06-24T23:32:46.544737+00:00",
+  "updated_at": "2026-06-24T23:32:46.633698+00:00"
+}

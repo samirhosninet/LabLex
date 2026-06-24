@@ -1,0 +1,7 @@
+{
+  "inputs": {
+    "spec": "LabLex AI Evaluation Control Plane MVP-0 Foundation",
+    "integration": "gemini",
+    "scope": "full"
+  }
+}
