@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from sqlalchemy import Column, String, DateTime, ForeignKey, Boolean, Integer, JSON, UniqueConstraint
+from sqlalchemy import Column, String, DateTime, ForeignKey, Boolean, Integer, JSON, UniqueConstraint, Index
 from sqlalchemy.orm import relationship
 from src.core.database import Base
 
@@ -80,6 +80,11 @@ class ToolRun(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
+    __table_args__ = (
+        Index("ix_tool_runs_tenant_id_status", "tenant_id", "status"),
+        Index("ix_tool_runs_tenant_id_created_at", "tenant_id", "created_at"),
+    )
+
     runspec = relationship("RunSpec", back_populates="tool_runs")
     batch = relationship("Batch", back_populates="tool_runs")
     raw_results = relationship("RawResult", back_populates="tool_run", cascade="all, delete-orphan")
@@ -96,6 +101,11 @@ class RawResult(Base):
     source_type = Column(String(50), nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 
+    __table_args__ = (
+        Index("ix_raw_results_run_id", "run_id"),
+        Index("ix_raw_results_tenant_id_storage_status", "tenant_id", "storage_status"),
+    )
+
     tool_run = relationship("ToolRun", back_populates="raw_results")
     normalized_results = relationship("NormalizedResult", back_populates="raw_result", cascade="all, delete-orphan")
 
@@ -111,6 +121,11 @@ class NormalizedResult(Base):
     metrics_summary = Column(JSON, nullable=True) # e.g. {"average_score": 0.85, ...}
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    __table_args__ = (
+        Index("ix_normalized_results_run_id", "run_id"),
+        Index("ix_normalized_results_tenant_id_created_at", "tenant_id", "created_at"),
+    )
 
     tool_run = relationship("ToolRun", back_populates="normalized_results")
     raw_result = relationship("RawResult", back_populates="normalized_results")
@@ -133,7 +148,106 @@ class NormalizedSample(Base):
     latency_ms = Column(Integer, nullable=True)
     sample_metadata = Column("metadata", JSON, nullable=True)
 
+    __table_args__ = (
+        Index("ix_normalized_samples_normalized_result_id", "normalized_result_id"),
+        Index("ix_normalized_samples_tenant_id_status", "tenant_id", "status"),
+    )
+
     normalized_result = relationship("NormalizedResult", back_populates="samples")
+
+
+class IdempotencyKey(Base):
+    __tablename__ = "idempotency_keys"
+
+    key = Column(String(255), primary_key=True)
+    tenant_id = Column(String, ForeignKey("tenants.id", ondelete="CASCADE"), primary_key=True)
+    response_body = Column(JSON, nullable=True)
+    status_code = Column(Integer, nullable=True)
+    expires_at = Column(DateTime, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class Comparison(Base):
+    __tablename__ = "comparisons"
+
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    tenant_id = Column(String, ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False)
+    name = Column(String(255), nullable=False)
+    metrics_delta = Column(JSON, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        Index("ix_comparisons_tenant_id_created_at", "tenant_id", "created_at"),
+    )
+
+    items = relationship("ComparisonItem", back_populates="comparison", cascade="all, delete-orphan")
+
+
+class ComparisonItem(Base):
+    __tablename__ = "comparison_items"
+
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    comparison_id = Column(String, ForeignKey("comparisons.id", ondelete="CASCADE"), nullable=False)
+    run_id = Column(String, ForeignKey("tool_runs.id", ondelete="CASCADE"), nullable=False)
+
+    comparison = relationship("Comparison", back_populates="items")
+    tool_run = relationship("ToolRun")
+
+
+class AuditEvent(Base):
+    __tablename__ = "audit_events"
+
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    tenant_id = Column(String, ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False)
+    actor_id = Column(String(255), nullable=False)
+    action = Column(String(100), nullable=False)
+    resource_type = Column(String(50), nullable=False)
+    resource_id = Column(String(255), nullable=False)
+    details = Column(JSON, nullable=True)
+    timestamp = Column(DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        Index("ix_audit_events_tenant_id_timestamp", "tenant_id", "timestamp"),
+        Index("ix_audit_events_resource", "resource_type", "resource_id"),
+        Index("ix_audit_events_actor_tenant", "actor_id", "tenant_id"),
+    )
+
+
+class TenantQuota(Base):
+    __tablename__ = "tenant_quotas"
+
+    tenant_id = Column(String, ForeignKey("tenants.id", ondelete="CASCADE"), primary_key=True)
+    max_concurrent_runs = Column(Integer, nullable=False, default=5)
+    max_monthly_runs = Column(Integer, nullable=False, default=100)
+    rate_limit_per_minute = Column(Integer, nullable=False, default=60)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class TenantRetentionConfig(Base):
+    __tablename__ = "tenant_retention_configs"
+
+    tenant_id = Column(String, ForeignKey("tenants.id", ondelete="CASCADE"), primary_key=True)
+    raw_results_retention_days = Column(Integer, nullable=False, default=30)
+    reports_retention_days = Column(Integer, nullable=False, default=365)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class RunEvent(Base):
+    __tablename__ = "run_events"
+
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    run_id = Column(String, ForeignKey("tool_runs.id", ondelete="CASCADE"), nullable=False)
+    event_type = Column(String(50), nullable=False, default="message")
+    data = Column(JSON, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        Index("ix_run_events_run_id_created_at", "run_id", "created_at"),
+    )
+
+    tool_run = relationship("ToolRun")
 
 
 from sqlalchemy import event, inspect

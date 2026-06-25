@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
 import Layout from '../../components/Layout';
 import { fetchWithAuth } from '../../services/api';
 
@@ -28,6 +29,7 @@ const COMPONENT_KINDS = [
 ];
 
 export default function RegistryIndex() {
+  const router = useRouter();
   const [manifests, setManifests] = useState<ManifestItem[]>([]);
   const [selectedKind, setSelectedKind] = useState<string>('');
   const [loading, setLoading] = useState(true);

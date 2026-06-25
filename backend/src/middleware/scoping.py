@@ -25,6 +25,8 @@ async def get_current_user_membership(
     api_key_header: Optional[str] = Header(None, alias="X-API-Key"),
     db: Session = Depends(get_db)
 ) -> tuple[str, str, str]: # returns (user_id/api_key_id, tenant_id, role)
+    from src.core.quotas import check_rate_limit
+
     # 1. Check API Key
     if api_key_header:
         hashed_key = hashlib.sha256(api_key_header.encode()).hexdigest()
@@ -44,6 +46,7 @@ async def get_current_user_membership(
 
         # Set tenant context
         current_tenant_id.set(key_record.tenant_id)
+        check_rate_limit(key_record.tenant_id, db)
         return key_record.id, key_record.tenant_id, key_record.scope
 
     # 2. Check JWT Token
@@ -79,6 +82,7 @@ async def get_current_user_membership(
             )
 
         current_tenant_id.set(tenant_id)
+        check_rate_limit(tenant_id, db)
         return user_id, tenant_id, membership.role
 
     raise LabLexException(

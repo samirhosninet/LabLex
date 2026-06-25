@@ -25,10 +25,8 @@ except Exception as e:
 
 def publish_progress(run_id: str, status: str, progress_percentage: int, message: str, metrics_preview: dict = None):
     """
-    Publishes real-time progress events to a Redis Pub/Sub channel.
+    Publishes real-time progress events to a Redis Pub/Sub channel and persists them in the DB.
     """
-    if not redis_client:
-        return
     payload = {
         "run_id": run_id,
         "status": status,
@@ -37,6 +35,25 @@ def publish_progress(run_id: str, status: str, progress_percentage: int, message
         "metrics_preview": metrics_preview or {},
         "timestamp": datetime.utcnow().isoformat()
     }
+    
+    # Persist to database for SSE replay
+    from src.models.evaluation import RunEvent
+    db = SessionLocal()
+    try:
+        event_record = RunEvent(
+            run_id=run_id,
+            event_type="message",
+            data=payload
+        )
+        db.add(event_record)
+        db.commit()
+    except Exception as e:
+        logger.error(f"Error saving run event to database: {e}")
+    finally:
+        db.close()
+
+    if not redis_client:
+        return
     try:
         redis_client.publish(f"run_events:{run_id}", json.dumps(payload))
     except Exception as e:
@@ -238,4 +255,30 @@ def run_evaluation_task(run_id: str):
         except Exception:
             pass
     finally:
+        try:
+            if run and run.batch_id:
+                from src.models.evaluation import Batch
+                batch = db.query(Batch).filter(Batch.id == run.batch_id).first()
+                if batch:
+                    # Count statuses
+                    runs_in_batch = db.query(ToolRun).filter(ToolRun.batch_id == run.batch_id).all()
+                    completed_count = sum(1 for r in runs_in_batch if r.status == "completed")
+                    failed_count = sum(1 for r in runs_in_batch if r.status in ("failed", "normalization_failed"))
+                    
+                    batch.completed_runs = completed_count
+                    batch.failed_runs = failed_count
+                    
+                    total_finished = completed_count + failed_count
+                    if total_finished >= batch.total_runs:
+                        if failed_count == 0:
+                            batch.status = "completed"
+                        elif completed_count == 0:
+                            batch.status = "failed"
+                        else:
+                            batch.status = "partial_failure"
+                    else:
+                        batch.status = "running"
+                    db.commit()
+        except Exception as batch_err:
+            logger.error(f"Error updating batch status in tasks: {batch_err}")
         db.close()
